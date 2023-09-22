@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.pylint",
+    "ms-python.black-formatter",
+    "charliermarsh.ruff",
+    "shd101wyy.markdown-preview-enhanced",
+    "mhutchie.git-graph",
+    "ninoseki.vscode-pylens",
+    "tamasfe.even-better-toml",
+    "redhat.vscode-yaml"
+  ]
+}
