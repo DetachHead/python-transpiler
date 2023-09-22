@@ -36,7 +36,7 @@
     {
       "label": "basedmypy - all files",
       "type": "shell",
-      "command": "${command:python.interpreterPath} -m mypy -p testpy; ${command:python.interpreterPath} -m mypy tests",
+      "command": "${command:python.interpreterPath} -m mypy -p python_transpiler; ${command:python.interpreterPath} -m mypy tests",
       "presentation": {
         "clear": true
       },
@@ -76,7 +76,7 @@
       "label": "pylint - all files",
       "type": "shell",
       "command": "${command:python.interpreterPath}",
-      "args": ["-m", "pylint", "testpy", "tests"],
+      "args": ["-m", "pylint", "python_transpiler", "tests"],
       "presentation": {
         "clear": true
       },

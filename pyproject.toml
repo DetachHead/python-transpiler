@@ -1,14 +1,15 @@
 [tool.poetry]
 authors = ["DetachHead <detachhead@users.noreply.github.com>"]
 description = ""
-name = "testpy"
+name = "python_transpiler"
 version = "0.1.0"
 readme = "README.md"
 repository = "https://github.com/detachhead/python-project"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.11"
 basedtyping = ">=0.0.3 <0.2"
+typer = { version = "^0.9.0", extras = ["all"] }
 
 [tool.poetry.group.dev.dependencies]
 black = ">=23"
@@ -22,7 +23,6 @@ build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.1.0b2"]
 
 [tool.black]
-target-version = ["py38"]
 skip-magic-trailing-comma = true
 preview = true
 
@@ -256,7 +256,7 @@ allow_redefinition = true
 default_return = false
 
 [[tool.mypy.overrides]]
-module = ['testpy.*', 'tests.*']
+module = ['python_transpiler.*', 'tests.*']
 default_return = true
 
 [tool.ruff]
@@ -343,13 +343,12 @@ ignore = [
     "PT013",   # Found incorrect import of pytest, use simple import pytest instead (only for bad linters that can't check the qualname)
     "TD002",   # Missing author in TODO
     "PGH003",  # Use specific rule codes when ignoring type issues (covered by mypy)
-    "S101",    # Use of assert detected (pytest uses assert statements)
     "E701",    # Multiple statements on one line (sometimes conflicts with black)
 ]
-target-version = "py38"
 respect-gitignore = true
 line-length = 100
 preview = true
+target-version = "py311"
 
 [tool.ruff.pycodestyle]
 ignore-overlong-task-comments = true
