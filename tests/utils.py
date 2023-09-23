@@ -4,14 +4,14 @@ from ast import parse, unparse
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from python_transpiler import transpile
+from python_transpiler.main import transpile
 
 if TYPE_CHECKING:
     from python_transpiler.utils import PythonVersion
 
 
 @dataclass
-class Tester:
+class TargetTester:
     target: PythonVersion
 
     def expect(self, input_code: str, output: str):

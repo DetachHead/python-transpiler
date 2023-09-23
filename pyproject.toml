@@ -250,6 +250,7 @@ max-line-length = 200
 [tool.pytest.ini_options]
 xfail_strict = true
 enable_assertion_pass_hook = true
+addopts = ['--ignore=tests/fixtures']
 
 [tool.mypy]
 allow_redefinition = true
@@ -344,6 +345,7 @@ ignore = [
     "TD002",   # Missing author in TODO
     "PGH003",  # Use specific rule codes when ignoring type issues (covered by mypy)
     "E701",    # Multiple statements on one line (sometimes conflicts with black)
+    "S603",    # subprocess-without-shell-equals-true (https://github.com/astral-sh/ruff/issues/4045)
 ]
 respect-gitignore = true
 line-length = 100
@@ -360,6 +362,7 @@ fixture-parentheses = false
 "*.pyi" = ["A001", "A002", "N"] # we don't control names in 3rd party modules
 "tests/**/*.py" = [
     "S101", # Use of assert detected (pytest uses assert statements)
+    "S607", # start-process-with-partial-path
 ]
 
 [tool.ruff.isort]
