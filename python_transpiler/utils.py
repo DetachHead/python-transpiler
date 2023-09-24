@@ -17,6 +17,10 @@ PythonVersion = tuple[int, int]
 
 
 class BaseVisitor(ABC, NodeTransformer):
+    def __init__(self) -> None:
+        self.dependencies = set[str]()
+        super().__init__()
+
     @staticmethod
     @abstractmethod
     def python_version() -> PythonVersion: ...

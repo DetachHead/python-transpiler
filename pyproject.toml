@@ -10,6 +10,7 @@ repository = "https://github.com/detachhead/python-project"
 python = "^3.11"
 basedtyping = ">=0.0.3 <0.2"
 typer = { version = "^0.9.0", extras = ["all"] }
+tomli-w = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = ">=23"

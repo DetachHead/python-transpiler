@@ -10,8 +10,16 @@ if TYPE_CHECKING:
     from python_transpiler.utils import PythonVersion
 
 
-def transpile(module: Module, target: PythonVersion):
+def transpile(module: Module, target: PythonVersion) -> set[str]:
+    """transpiles the specified module to be compatible with the target python version
+
+    :returns: the pypi names of any additional dependencies that are required for the module to work
+    on the target version (eg. polyfills such as `exceptiongroup`)"""
+    dependencies = set[str]()
     # versions will probably need to be in highest to lowest order
-    for visitor in (Py310Visitor,):
+    for visitor_class in (Py310Visitor,):
+        visitor = visitor_class()
         if visitor.python_version() >= target:
-            visitor().visit(module)
+            visitor.visit(module)
+            dependencies.update(visitor.dependencies)
+    return dependencies
