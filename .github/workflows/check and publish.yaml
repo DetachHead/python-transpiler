@@ -56,9 +56,13 @@ jobs:
       - name: set token
         run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
       # TODO: save installed deps from previous stage
-      - run: poetry install
-      - run: poetry run transpile transpiled --target=3.8
-      - run: cd transpiled
+      - name: Download transpiled code
+        uses: actions/download-artifact@v3
+        with:
+          name: transpiled
+          path: transpiled
+      - name: setup transpiled project
+        run: cd transpiled
       - run: poetry build
       - run: poetry publish
       - run: ./pw pdm publish
