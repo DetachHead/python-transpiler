@@ -19,6 +19,9 @@ pylint = ">=2.15"
 pytest = "^7"
 ruff = ">=0.0.290"
 
+[tool.poetry.scripts]
+transpile = 'python_transpiler.cli:main'
+
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.1.0b2"]
