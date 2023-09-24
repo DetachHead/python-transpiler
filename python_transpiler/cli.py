@@ -34,7 +34,7 @@ def typer_main(
 
     if not input_path.is_dir():
         raise Exception(f"package directory not found: {input_path}")
-    input_files = list(input_path.rglob("*"))
+    input_files = list(input_path.rglob("**/*.py"))
     parent = input_path
     polyfills = set()
     for input_file in input_files:
