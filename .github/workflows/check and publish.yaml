@@ -12,7 +12,7 @@ permissions:
   pull-requests: "read"
 
 jobs:
-  static-checks:
+  static-checks-and-transpile:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,8 +30,14 @@ jobs:
       - run: poetry run black --check --diff .
       - run: poetry run ruff .
       - run: poetry run pylint python_transpiler tests
-      - run: poetry run pytest
+      - run: poetry run transpile transpiled --target=3.8
+      - name: upload transpiled code
+        uses: actions/upload-artifact@v3
+        with:
+          name: transpiled
+          path: transpiled
   test:
+    needs: static-checks-and-transpile
     strategy:
         fail-fast: false
         matrix:
@@ -46,16 +52,23 @@ jobs:
         uses: abatilo/actions-poetry@v2.1.4
         with:
           poetry-version: ${{ env.POETRY_VERSION }}
-      # TODO: save installed deps from previous stage
       - run: poetry install
-      - run: poetry run transpile transpiled --target=${{ matrix.python_version }}
-      - run: cd transpiled && poetry install
+      - name: Download transpiled code
+        uses: actions/download-artifact@v3
+        with:
+          name: transpiled
+          path: transpiled
+      - name: setup transpiled project
+        # we did poetry install already, but now we need to replace the root package with the transpiled version
+        run: |
+          cd transpiled
+          poetry install --only-root
+          cd ..
       - run: poetry run pytest
   publish:
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
     needs:
-      - static-checks
       - test
     steps:
       - uses: actions/checkout@v2
@@ -69,9 +82,13 @@ jobs:
       - name: set token
         run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
       # TODO: save installed deps from previous stage
-      - run: poetry install
-      - run: poetry run transpile transpiled --target=3.8
-      - run: cd transpiled
+      - name: Download transpiled code
+        uses: actions/download-artifact@v3
+        with:
+          name: transpiled
+          path: transpiled
+      - name: setup transpiled project
+        run: cd transpiled
       - run: poetry build
       - run: poetry publish
       - name: get version number
