@@ -15,7 +15,7 @@ readme = "README.md"
 license = { text = "MIT" }
 
 [project.urls]
-repository = "https://github.com/detachhead/pytest-robotframework"
+repository = "https://github.com/detachhead/python-transpiler"
 
 [project.scripts]
 transpile = 'python_transpiler.cli:main'

@@ -11,7 +11,7 @@ permissions:
   pull-requests: "read"
 
 jobs:
-  check:
+  static-checks:
     strategy:
         fail-fast: false
         matrix:
@@ -22,6 +22,10 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run image
+        uses: abatilo/actions-poetry@v2.1.4
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
       - run: ./pw pdm lock --check
       - run: ./pw install
       - run: ./pw run mypy -p python_transpiler
@@ -33,7 +37,8 @@ jobs:
   publish:
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
-    needs: check
+    needs:
+      - static-checks
     permissions:
       id-token: write
       contents: write
@@ -41,6 +46,21 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Run image
+        uses: abatilo/actions-poetry@v2.1.4
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
+      - name: set token
+        run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
+      # TODO: save installed deps from previous stage
+      - run: poetry install
+      - run: poetry run transpile transpiled --target=3.8
+      - run: cd transpiled
+      - run: poetry build
+      - run: poetry publish
       - run: ./pw pdm publish
       - name: get version number
         id: current-version
