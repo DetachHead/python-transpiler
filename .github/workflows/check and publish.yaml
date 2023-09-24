@@ -2,7 +2,7 @@ name: check and publish
 
 env:
   POETRY_VERSION: "1.6.1"
-  PYTHON_VERSION: 3.11"
+  PYTHON_VERSION: "3.11"
 
 on: push
 
