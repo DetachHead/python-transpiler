@@ -12,7 +12,7 @@ permissions:
   pull-requests: "read"
 
 jobs:
-  check:
+  static-checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,10 +31,32 @@ jobs:
       - run: poetry run ruff .
       - run: poetry run pylint python_transpiler tests
       - run: poetry run pytest
+  test:
+    strategy:
+        fail-fast: false
+        matrix:
+          python_version: ["3.8", "3.9", "3.10", "3.11"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Run image
+        uses: abatilo/actions-poetry@v2.1.4
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
+      # TODO: save installed deps from previous stage
+      - run: poetry install
+      - run: poetry run transpile transpiled --target=${{ matrix.python_version }}
+      - run: cd transpiled && poetry install
+      - run: poetry run pytest
   publish:
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
-    needs: check
+    needs:
+      - static-checks
+      - test
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
@@ -46,6 +68,10 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
       - name: set token
         run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
+      # TODO: save installed deps from previous stage
+      - run: poetry install
+      - run: poetry run transpile transpiled --target=3.8
+      - run: cd transpiled
       - run: poetry build
       - run: poetry publish
       - name: get version number

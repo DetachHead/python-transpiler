@@ -7,7 +7,7 @@ readme = "README.md"
 repository = "https://github.com/detachhead/python-project"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.8"
 basedtyping = ">=0.0.3 <0.2"
 typer = { version = "^0.9.0", extras = ["all"] }
 tomli-w = "^1.0.0"
