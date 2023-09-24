@@ -54,7 +54,7 @@ def typer_main(
         output_file.write_text(unparse(module))
 
     for polyfill in polyfills:
-        if not "dependencies" not in project_config:
+        if "dependencies" not in project_config:
             project_config["dependencies"] = []
         project_config["dependencies"] += polyfill  # type:ignore[operator]
     (output_dir / "pyproject.toml").write_text(
