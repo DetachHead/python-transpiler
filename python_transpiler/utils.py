@@ -8,7 +8,7 @@ from typing import cast
 def parse_python_version(values: str) -> PythonVersion:
     return cast(
         PythonVersion,
-        # TODO: mypy issue
+        # https://github.com/python/mypy/issues/16170
         tuple(int(value) for value in values.split(".")),  # type:ignore[no-any-expr]
     )
 
