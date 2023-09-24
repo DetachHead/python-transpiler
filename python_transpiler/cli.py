@@ -54,7 +54,7 @@ def typer_main(
         output_file.write_text(unparse(module))
 
     for polyfill in polyfills:
-        if not "dependencies" not in poetry_config:
+        if "dependencies" not in poetry_config:
             poetry_config["dependencies"] = {}
         poetry_config["dependencies"][  # type:ignore[index]
             polyfill

@@ -21,3 +21,9 @@ def test_typing_extensions_import_with_other_import():
         "from dataclasses import dataclass\nfrom typing import Never",
         "from dataclasses import dataclass\nfrom typing_extensions import Never",
     )
+
+
+def test_import_with_dependency():
+    tester.expect(
+        "from tomllib import loads", "from tomli import loads", dependencies={"tomli"}
+    )
