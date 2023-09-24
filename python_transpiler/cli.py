@@ -15,9 +15,9 @@ from python_transpiler.main import transpile
 from python_transpiler.utils import parse_python_version
 
 
-def main(
+def typer_main(
     output_dir: Path,
-    # typer doesn't support unions
+    # typer doesn't support union with None https://github.com/tiangolo/typer/issues/533
     target: Optional[str] = None,  # noqa: UP007
 ):
     # TODO: figure out a better way to compile wheels that doesnt rely on it being a
@@ -67,4 +67,9 @@ def main(
         copyfile(readme_file, output_dir / Path(readme_file).name)
 
 
-run(main)
+def main():
+    run(typer_main)
+
+
+if __name__ == "__main__":
+    main()

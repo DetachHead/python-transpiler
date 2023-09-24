@@ -1,22 +1,15 @@
 from __future__ import annotations
 
-from pathlib import Path
 from subprocess import run
+from typing import TYPE_CHECKING
 
-import python_transpiler
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_cli(tmp_path: Path):
     run(
-        [
-            "poetry",
-            "run",
-            "python",
-            Path(python_transpiler.__file__).parent / "cli.py",
-            tmp_path,
-            "--target",
-            "3.10",
-        ],
+        ["poetry", "run", "transpile", tmp_path, "--target", "3.10"],
         check=True,
         cwd="tests/fixtures/cli",
     )
