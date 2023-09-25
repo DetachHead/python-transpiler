@@ -15,7 +15,6 @@ def test_cli(tmp_path: Path):
         cwd="tests/fixtures/cli",
     )
     assert (tmp_path / "package/__init__.py").exists()
-    print((tmp_path / "pyproject.toml").read_text())  # noqa: T201
     assert (
         loads((tmp_path / "pyproject.toml").read_text())[  # type:ignore[no-any-expr]
             "tool"

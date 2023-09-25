@@ -3,7 +3,6 @@ name: check and publish
 env:
   POETRY_VERSION: "1.6.1"
   PYTHON_VERSION: "3.11"
-  TRANSPILED_DIR: "transpiled"
 
 on: push
 
@@ -13,7 +12,7 @@ permissions:
   pull-requests: "read"
 
 jobs:
-  static-checks-and-transpile:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,43 +30,11 @@ jobs:
       - run: poetry run black --check --diff .
       - run: poetry run ruff .
       - run: poetry run pylint python_transpiler tests
-      - run: poetry run transpile --target=3.8 --compile-all
-      - name: upload transpiled code
-        uses: actions/upload-artifact@v3
-        with:
-          name: transpiled
-          path: transpiled
-  test:
-    needs: static-checks-and-transpile
-    strategy:
-        fail-fast: false
-        matrix:
-          python_version: ["3.8", "3.9", "3.10", "3.11"]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python_version }}
-      - name: Run image
-        uses: abatilo/actions-poetry@v2.1.4
-        with:
-          poetry-version: ${{ env.POETRY_VERSION }}
-      - name: Download transpiled code
-        uses: actions/download-artifact@v3
-        with:
-          name: transpiled
-          path: transpiled
-      - name: setup transpiled project
-        run: poetry install
-        working-directory: ${{ env.TRANSPILED_DIR }}
       - run: poetry run pytest
-        working-directory: ${{ env.TRANSPILED_DIR }}
   publish:
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
-    needs:
-      - test
+    needs: check
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
@@ -79,23 +46,14 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
       - name: set token
         run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
-      # TODO: save installed deps from previous stage
-      - name: Download transpiled code
-        uses: actions/download-artifact@v3
-        with:
-          name: transpiled
-          path: transpiled
       - run: poetry build
-        working-directory: ${{ env.TRANSPILED_DIR }}
       - run: poetry publish
-        working-directory: ${{ env.TRANSPILED_DIR }}
       - name: get version number
         id: current-version
         run: echo ::set-output name=CURRENT_VERSION::$(poetry version -s)
-        working-directory: ${{ env.TRANSPILED_DIR }}
       - uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: false
-          files: ${{ env.TRANSPILED_DIR }}/dist/*
+          files: dist/*
           automatic_release_tag: ${{ steps.current-version.outputs.CURRENT_VERSION }}
