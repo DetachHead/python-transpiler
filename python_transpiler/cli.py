@@ -19,6 +19,7 @@ def typer_main(
     output_dir: Path,
     # typer doesn't support union with None https://github.com/tiangolo/typer/issues/533
     target: Optional[str] = None,  # noqa: UP007
+    compile_all: bool = False,  # noqa: FBT002, FBT001
 ):
     # TODO: figure out a better way to compile wheels that doesnt rely on it being a
     # poetry project.
@@ -30,7 +31,7 @@ def typer_main(
         "tool"
     ]["poetry"]
     package_name = cast(str, poetry_config["name"])
-    input_path = Path(package_name).resolve()
+    input_path = Path("." if compile_all else package_name).resolve()
 
     if not input_path.is_dir():
         raise Exception(f"package directory not found: {input_path}")
@@ -49,7 +50,11 @@ def typer_main(
                 ),
             )
         )
-        output_file = output_dir / package_name / input_file.relative_to(parent)
+        output_file = (
+            output_dir
+            / ("." if compile_all else package_name)
+            / input_file.relative_to(parent)
+        )
         output_file.parent.mkdir(parents=True, exist_ok=True)
         output_file.write_text(unparse(module))
 

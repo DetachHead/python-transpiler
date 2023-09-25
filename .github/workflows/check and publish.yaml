@@ -30,7 +30,7 @@ jobs:
       - run: poetry run black --check --diff .
       - run: poetry run ruff .
       - run: poetry run pylint python_transpiler tests
-      - run: poetry run transpile transpiled --target=3.8
+      - run: poetry run transpile transpiled --target=3.8 --compile-all
       - name: upload transpiled code
         uses: actions/upload-artifact@v3
         with:
@@ -52,18 +52,15 @@ jobs:
         uses: abatilo/actions-poetry@v2.1.4
         with:
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: poetry install
       - name: Download transpiled code
         uses: actions/download-artifact@v3
         with:
           name: transpiled
           path: transpiled
       - name: setup transpiled project
-        # we did poetry install already, but now we need to replace the root package with the transpiled version
         run: |
           cd transpiled
-          poetry install --only-root
-          cd ..
+          poetry install
       - run: poetry run pytest
   publish:
     runs-on: "ubuntu-latest"
