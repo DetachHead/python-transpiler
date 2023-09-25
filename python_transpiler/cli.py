@@ -2,7 +2,7 @@
 # typer needs to evaluate the type annotations so can't use __future__.annotations here
 
 import sys
-from ast import parse, unparse
+from ast import Module, parse, unparse
 from pathlib import Path
 from shutil import copyfile
 from tomllib import loads
@@ -35,21 +35,31 @@ def typer_main(
 
     if not input_path.is_dir():
         raise Exception(f"package directory not found: {input_path}")
-    input_files = list(input_path.rglob("**/*.py"))
+    # extremely cringe:
+    input_files = [
+        input_file
+        for input_file in input_path.rglob("*")
+        if input_file.is_file()
+        and "__pycache__" not in input_file.parts
+        and output_dir.resolve() not in input_file.parents
+        and not [part for part in input_file.parts if part.startswith(".")]
+    ]
     parent = input_path
     polyfills = set()
     for input_file in input_files:
-        module = parse(input_file.read_text(), input_file)
-        polyfills.update(
-            transpile(
-                module,
-                (
-                    parse_python_version(target)
-                    if target
-                    else (sys.version_info[0], sys.version_info[1])
-                ),
+        module: Module | None = None
+        if input_file.suffix.lower() == ".py":
+            module = parse(input_file.read_text(), input_file)
+            polyfills.update(
+                transpile(
+                    module,
+                    (
+                        parse_python_version(target)
+                        if target
+                        else (sys.version_info[0], sys.version_info[1])
+                    ),
+                )
             )
-        )
         output_file = (
             output_dir
             / ("." if compile_all else package_name)
@@ -58,9 +68,14 @@ def typer_main(
         output_file.parent.mkdir(parents=True, exist_ok=True)
         output_file.write_text(unparse(module))
 
-    for polyfill in polyfills:
+    if polyfills:
         if "dependencies" not in project_config:
-            project_config["dependencies"] = []
+            project_config["dependencies"] = {}
+        lockfile = output_dir / "poetry.lock"
+        # if we need to change the deps we can't use the lockfile
+        if lockfile.exists():
+            lockfile.unlink()
+    for polyfill in polyfills:
         project_config["dependencies"] += polyfill  # type:ignore[operator]
     (output_dir / "pyproject.toml").write_text(
         dumps(pyproject_toml)  # type:ignore[no-any-expr]
