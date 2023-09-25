@@ -2,7 +2,7 @@
 # typer needs to evaluate the type annotations so can't use __future__.annotations here
 
 import sys
-from ast import parse, unparse
+from ast import Module, parse, unparse
 from pathlib import Path
 from shutil import copyfile, rmtree
 from tomllib import loads
@@ -38,28 +38,39 @@ def typer_main(
     if not input_path.is_dir():
         raise Exception(f"package directory not found: {input_path}")
     # extremely cringe:
-    input_files = list(input_path.rglob("**/*.py"))
+    input_files = [
+        file
+        for file in input_path.rglob("*")
+        if file.is_file()
+        and "__pycache__" not in file.parts
+        and not [part for part in file.parts if part.startswith(".")]
+    ]
     parent = input_path
     polyfills = set()
     for input_file in input_files:
-        module = parse(input_file.read_text(), input_file)
-        polyfills.update(
-            transpile(
-                module,
-                (
-                    parse_python_version(target)
-                    if target
-                    else (sys.version_info[0], sys.version_info[1])
-                ),
+        module: Module | None = None
+        if input_file.suffix.lower() == ".py":
+            module = parse(input_file.read_text(), input_file)
+            polyfills.update(
+                transpile(
+                    module,
+                    (
+                        parse_python_version(target)
+                        if target
+                        else (sys.version_info[0], sys.version_info[1])
+                    ),
+                )
             )
-        )
         output_file = (
             output_dir
             / ("." if compile_all else package_name)
             / input_file.relative_to(parent)
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(unparse(module))
+        if module:
+            output_file.write_text(unparse(module))
+        else:
+            copyfile(input_file, output_file)
     if polyfills:
         if "dependencies" not in poetry_config:
             poetry_config["dependencies"] = {}
@@ -74,9 +85,6 @@ def typer_main(
     (output_dir / "pyproject.toml").write_text(
         dumps(pyproject_toml)  # type:ignore[no-any-expr]
     )
-    readme = cast(str | None, poetry_config["readme"])
-    if readme:
-        copyfile(readme, output_dir / Path(readme).name)
 
 
 def main():
