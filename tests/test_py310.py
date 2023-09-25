@@ -27,3 +27,7 @@ def test_import_with_dependency():
     tester.expect(
         "from tomllib import loads", "from tomli import loads", dependencies={"tomli"}
     )
+
+
+def test_doesnt_do_lower_targets():
+    tester.expect("from typing import Concatenate", "from typing import Concatenate")
