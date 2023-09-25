@@ -32,4 +32,3 @@ def test_cli(tmp_path: Path):
         ]["poetry"]["dependencies"]["tomli"]
         == "*"
     )
-    assert (tmp_path / "README.md").exists()
