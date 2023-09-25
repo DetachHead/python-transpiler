@@ -2,7 +2,7 @@
 # typer needs to evaluate the type annotations so can't use __future__.annotations here
 
 import sys
-from ast import parse, unparse
+from ast import Module, parse, unparse
 from pathlib import Path
 from shutil import copyfile, rmtree
 from tomllib import loads
@@ -38,21 +38,29 @@ def typer_main(
     if not input_path.is_dir():
         raise Exception(f"package directory not found: {input_path}")
     # extremely cringe:
-    input_files = list(input_path.rglob("**/*.py"))
+    input_files = [
+        file
+        for file in input_path.rglob("*")
+        if file.is_file()
+        and "__pycache__" not in file.parts
+        and not [part for part in file.parts if part.startswith(".")]
+    ]
     parent = input_path
     polyfills = set()
     for input_file in input_files:
-        module = parse(input_file.read_text(), input_file)
-        polyfills.update(
-            transpile(
-                module,
-                (
-                    parse_python_version(target)
-                    if target
-                    else (sys.version_info[0], sys.version_info[1])
-                ),
+        module: Module | None = None
+        if input_file.suffix.lower() == ".py":
+            module = parse(input_file.read_text(), input_file)
+            polyfills.update(
+                transpile(
+                    module,
+                    (
+                        parse_python_version(target)
+                        if target
+                        else (sys.version_info[0], sys.version_info[1])
+                    ),
+                )
             )
-        )
         output_file = (
             output_dir
             / ("." if compile_all else package_name)
@@ -73,9 +81,6 @@ def typer_main(
     (output_dir / "pyproject.toml").write_text(
         dumps(pyproject_toml)  # type:ignore[no-any-expr]
     )
-    readme_file = cast(str | None, project_config.get("readme"))
-    if readme_file:
-        copyfile(readme_file, output_dir / Path(readme_file).name)
 
 
 def main():
