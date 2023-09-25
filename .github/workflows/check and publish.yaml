@@ -3,6 +3,7 @@ name: check and publish
 env:
   POETRY_VERSION: "1.6.1"
   PYTHON_VERSION: "3.11"
+  TRANSPILED_DIR: "transpiled"
 
 on: push
 
@@ -58,10 +59,10 @@ jobs:
           name: transpiled
           path: transpiled
       - name: setup transpiled project
-        run: |
-          cd transpiled
-          poetry install
+        run: poetry install
+        working-directory: ${{ env.TRANSPILED_DIR }}
       - run: poetry run pytest
+        working-directory: ${{ env.TRANSPILED_DIR }}
   publish:
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
@@ -84,16 +85,17 @@ jobs:
         with:
           name: transpiled
           path: transpiled
-      - name: setup transpiled project
-        run: cd transpiled
       - run: poetry build
+        working-directory: ${{ env.TRANSPILED_DIR }}
       - run: poetry publish
+        working-directory: ${{ env.TRANSPILED_DIR }}
       - name: get version number
         id: current-version
         run: echo ::set-output name=CURRENT_VERSION::$(poetry version -s)
+        working-directory: ${{ env.TRANSPILED_DIR }}
       - uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: false
-          files: dist/*
+          files: ${{ env.TRANSPILED_DIR }}/dist/*
           automatic_release_tag: ${{ steps.current-version.outputs.CURRENT_VERSION }}
