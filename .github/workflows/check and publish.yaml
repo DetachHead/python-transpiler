@@ -31,7 +31,7 @@ jobs:
       - run: poetry run black --check --diff .
       - run: poetry run ruff .
       - run: poetry run pylint python_transpiler tests
-      - run: poetry run transpile transpiled --target=3.8 --compile-all
+      - run: poetry run transpile --target=3.8 --compile-all
       - name: upload transpiled code
         uses: actions/upload-artifact@v3
         with:

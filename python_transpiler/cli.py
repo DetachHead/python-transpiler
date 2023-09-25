@@ -4,7 +4,7 @@
 import sys
 from ast import Module, parse, unparse
 from pathlib import Path
-from shutil import copyfile
+from shutil import copyfile, rmtree
 from tomllib import loads
 from typing import Optional, cast
 
@@ -16,11 +16,13 @@ from python_transpiler.utils import parse_python_version
 
 
 def typer_main(
-    output_dir: Path,
+    output_dir: Path = Path("transpiled"),
     # typer doesn't support union with None https://github.com/tiangolo/typer/issues/533
     target: Optional[str] = None,  # noqa: UP007
     compile_all: bool = False,  # noqa: FBT002, FBT001
 ):
+    if output_dir.exists():
+        rmtree(output_dir)
     # TODO: figure out a better way to compile wheels that doesnt rely on it being a
     # poetry project.
     # https://github.com/DetachHead/python-transpiler/issues/15

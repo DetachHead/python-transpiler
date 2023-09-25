@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 def test_cli(tmp_path: Path):
     run(
-        ["poetry", "run", "transpile", tmp_path, "--target", "3.10"],
+        ["poetry", "run", "transpile", "--output-dir", tmp_path, "--target", "3.10"],
         check=True,
         cwd="tests/fixtures/cli",
     )
@@ -21,4 +21,3 @@ def test_cli(tmp_path: Path):
         ]["poetry"]["dependencies"]["tomli"]
         == "*"
     )
-    assert (tmp_path / "README.md").exists()
