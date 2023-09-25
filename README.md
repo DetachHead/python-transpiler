@@ -1,3 +1,3 @@
-# python-project
+# python-transpiler
 
-this is a template project. if you don't remove this message you are lazy
+this is not usable yet!!!!!!! go away
