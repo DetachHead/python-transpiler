@@ -26,7 +26,6 @@ def test_cli(tmp_path: Path):
     except CalledProcessError as e:
         raise Exception(str(cast(str | bytes | None, e.stderr))) from e
     assert (tmp_path / "package/__init__.py").exists()
-    print((tmp_path / "pyproject.toml").read_text())  # noqa: T201
     assert (
         loads((tmp_path / "pyproject.toml").read_text())[  # type:ignore[no-any-expr]
             "tool"
