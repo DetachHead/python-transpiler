@@ -9,8 +9,9 @@
   "git.supportCancellation": true,
   "git.useEditorAsCommitInput": false,
   "diffEditor.ignoreTrimWhitespace": false,
-  "python.linting.mypyArgs": ["--show-column-numbers"],
-  "python.linting.mypyEnabled": true,
+  "terminal.integrated.persistentSessionReviveProcess": "never",
+  "mypy-type-checker.args": ["--ide"],
+  "mypy-type-checker.importStrategy": "fromEnvironment",
   "files.autoSave": "onFocusChange",
   "search.useIgnoreFiles": true,
   "git.useCommitInputAsStashMessage": true,
@@ -22,6 +23,7 @@
   "python.analysis.typeCheckingMode": "off",
   "python.analysis.autoFormatStrings": true,
   "python.analysis.gotoDefinitionInStringLiteral": true,
+  "python.analysis.typeshedPaths": ["./.venv/lib/site-packages/mypy/typeshed"],
   "pylint.importStrategy": "fromEnvironment",
   "pylint.severity": {
     "convention": "Warning",
@@ -38,5 +40,8 @@
   "yaml.schemas": {
     "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json": ".github/workflows/*.yaml"
   },
-  "explorer.compactFolders": false
+  "explorer.compactFolders": false,
+  "search.exclude": {
+    "pw": true
+  }
 }

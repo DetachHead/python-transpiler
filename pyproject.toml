@@ -1,37 +1,54 @@
-[tool.poetry]
-authors = ["DetachHead <detachhead@users.noreply.github.com>"]
-description = ""
+[project]
 name = "python_transpiler"
 version = "0.1.0"
+description = ""
+authors = [
+    { name = "DetachHead", email = "detachhead@users.noreply.github.com" },
+]
+dependencies = [
+    "basedtyping<0.2,>=0.0.3",
+    "typer[all]>=0.9.0,<0.10.0",
+    "tomli-w>=1.0.0,<2.0.0",
+]
+requires-python = ">=3.8,<4.0"
 readme = "README.md"
-repository = "https://github.com/detachhead/python-project"
+license = { text = "MIT" }
 
-[tool.poetry.dependencies]
-python = "^3.11"
-basedtyping = ">=0.0.3 <0.2"
-typer = { version = "^0.9.0", extras = ["all"] }
-tomli-w = "^1.0.0"
+[project.urls]
+repository = "https://github.com/detachhead/pytest-robotframework"
 
-[tool.poetry.group.dev.dependencies]
-black = ">=23"
-basedmypy = ">=2.1"
-pylint = ">=2.15"
-pytest = "^7"
-ruff = ">=0.0.290"
+[tool.pyprojectx]
+pdm = "pdm==2.9.3"
 
-[tool.poetry.scripts]
-transpile = 'python_transpiler.cli:main'
+[tool.pyprojectx.aliases]
+install = "pdm install"
+run = "pdm run"
+outdated = "pdm update --outdated"
+test = "pdm run pytest"
+
+
+[tool.pdm.dev-dependencies]
+lint = ["black>=23", "basedmypy>=2.1", "pylint>=3.0.0a7", "ruff>=0.0.290"]
+test = ["pytest>=7.4.2"]
+
+# maybe these should be pyprojectx scripts instead once https://github.com/pyprojectx/pyprojectx/issues/26 is fixed
+[tool.pdm.scripts]
+_mypy_package = { cmd = "pdm run mypy -p python_transpiler" }
+_mypy_tests = { cmd = "pdm run mypy -p tests" }
+mypy_all = { composite = ["_mypy_package", "_mypy_tests"] }
+transpile = { call = 'python_transpiler.cli:main' }
 
 [build-system]
-build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core>=1.1.0b2"]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
 
 [tool.black]
+target-version = ["py38"]
 skip-magic-trailing-comma = true
 preview = true
 
 [tool.pylint.MASTER]
-ignore-patterns = '.*\.pyi'
 fail-on = "I"
 bad-names = ["foo", "bar", "baz", "retval"]
 load-plugins = [
@@ -110,7 +127,6 @@ enable = [
     "logging-format-truncated",
     "logging-unsupported-format",
     "method-hidden",
-    "misplaced-bare-raise",
     "misplaced-format-function",
     "missing-kwoa",
     "modified-iterating-dict",
@@ -134,7 +150,6 @@ enable = [
     "unsupported-assignment-operation",
     "unsupported-binary-operation",
     "unsupported-delete-operation",
-    "used-before-assignment",
     "abstract-method",
     "anomalous-unicode-escape-in-string",
     "arguments-out-of-order",
@@ -155,7 +170,6 @@ enable = [
     "deprecated-module",
     "differing-param-doc",
     "differing-type-doc",
-    "global-at-module-level",
     "global-variable-undefined",
     "invalid-format-index",
     "invalid-overridden-method",
@@ -217,6 +231,7 @@ enable = [
     "mixed-line-endings",
     "non-ascii-module-import",
     "non-ascii-name",
+    "superfluous-parens",
     "unexpected-line-ending-format",
     "use-implicit-booleaness-not-comparison",
     "chained-comparison",
@@ -265,55 +280,12 @@ module = ['python_transpiler.*', 'tests.*']
 default_return = true
 
 [tool.ruff]
-extend-select = [
-    "I",
-    "UP",
-    "PYI",
-    "PL",
-    "B",
-    "PGH",
-    "T10",
-    "G",
-    "A",
-    "ERA",
-    "ARG",
-    "SIM",
-    "RET",
-    "N",
-    "RUF",
-    "S",
-    "ISC",
-    "TRY",
-    "D",
-    "PT",
-    "YTT",
-    "ASYNC",
-    "BLE",
-    "FBT",
-    "C4",
-    "DTZ",
-    "T10",
-    "FA",
-    "INP",
-    "PIE",
-    "G",
-    "T20",
-    "RSE",
-    "RET",
-    "SLF",
-    "TID",
-    "TCH",
-    "PTH",
-    "TD",
-    "PD",
-    "FLY",
-    "NPY",
-    "AIR",
-    "PERF",
-    "FURB",
-    "LOG",
-]
+extend-select = ["ALL"]
 ignore = [
+    "ANN",     # flake8-annotations (covered by mypy)
+    "COM",     # flake8-annotations (covered by black)
+    "EM",      # flake8-errmsg
+    "FIX",     # flake8-fixme
     "PLR0913", # Too many arguments to function call
     "PLR0912", # Too many branches
     "PLR0915", # Too many statements
@@ -348,8 +320,11 @@ ignore = [
     "PT013",   # Found incorrect import of pytest, use simple import pytest instead (only for bad linters that can't check the qualname)
     "TD002",   # Missing author in TODO
     "PGH003",  # Use specific rule codes when ignoring type issues (covered by mypy)
+    "S101",    # Use of assert detected (pytest uses assert statements)
     "E701",    # Multiple statements on one line (sometimes conflicts with black)
     "S603",    # subprocess-without-shell-equals-true (https://github.com/astral-sh/ruff/issues/4045)
+    "CPY001",  # missing-copyright-notice
+    "C901",    # max-complexity
 ]
 respect-gitignore = true
 line-length = 100
