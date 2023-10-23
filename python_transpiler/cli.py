@@ -21,15 +21,15 @@ def typer_main(
     target: Optional[str] = None,  # noqa: UP007
 ):
     # TODO: figure out a better way to compile wheels that doesnt rely on it being a
-    # poetry project.
+    # pdm project.
     # https://github.com/DetachHead/python-transpiler/issues/15
     pyproject_toml = loads(  # type:ignore[no-any-expr]
         Path("pyproject.toml").read_text()
     )
-    poetry_config: dict[str, object] = pyproject_toml[  # type:ignore[no-any-expr]
-        "tool"
-    ]["poetry"]
-    package_name = cast(str, poetry_config["name"])
+    project_config: dict[str, object] = pyproject_toml[  # type:ignore[no-any-expr]
+        "project"
+    ]
+    package_name = cast(str, project_config["name"])
     input_path = Path(package_name).resolve()
 
     if not input_path.is_dir():
@@ -54,15 +54,13 @@ def typer_main(
         output_file.write_text(unparse(module))
 
     for polyfill in polyfills:
-        if not "dependencies" not in poetry_config:
-            poetry_config["dependencies"] = {}
-        poetry_config["dependencies"][  # type:ignore[index]
-            polyfill
-        ] = "*"
+        if not "dependencies" not in project_config:
+            project_config["dependencies"] = []
+        project_config["dependencies"] += polyfill  # type:ignore[operator]
     (output_dir / "pyproject.toml").write_text(
         dumps(pyproject_toml)  # type:ignore[no-any-expr]
     )
-    readme_file = cast(str | None, poetry_config.get("readme"))
+    readme_file = cast(str | None, project_config.get("readme"))
     if readme_file:
         copyfile(readme_file, output_dir / Path(readme_file).name)
 
