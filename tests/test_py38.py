@@ -1,10 +1,22 @@
 from __future__ import annotations
 
+from textwrap import dedent
+
 import pytest
 
 from tests.utils import TargetTester
 
 tester = TargetTester((3, 8))
+
+
+def test_list():
+    tester.expect(
+        "list",
+        dedent("""
+               import polyfills
+               from typing import List
+               List"""),
+    )
 
 
 def test_generic_list():

@@ -3,8 +3,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 from subprocess import CalledProcessError, run
-from typing import cast
 from tomllib import loads
+from typing import cast
+
 
 def test_cli(tmp_path: Path):
     try:

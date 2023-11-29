@@ -1,28 +1,34 @@
 from __future__ import annotations
+
 import ast
 from collections import defaultdict
-from mypy.build import BuildManager
+from pathlib import Path
 
+from mypy.build import BuildManager, BuildSource, build as mypy_build
 from mypy.nodes import (
-    IndexExpr,
-    NameExpr,
-    get_nongen_builtins,
-    Expression,
-    TypeAliasExpr,
-    OpExpr,
-    MypyFile,
-    ImportFrom,
     AssignmentStmt,
-    FuncDef,
     ClassDef,
+    Expression,
+    FuncDef,
+    ImportFrom,
+    IndexExpr,
+    MypyFile,
+    NameExpr,
+    OpExpr,
+    TypeAliasExpr,
+    get_nongen_builtins,
 )
+from mypy.options import Options
 from mypy.treetransform import TransformVisitor
 from mypy.typeanal import TypeAnalyser
-from mypy.types import Instance, UnboundType, Type
+from mypy.types import Instance, Type, UnboundType
 from mypy.typetraverser import TypeTraverserVisitor
 from typing_extensions import override
 
 from python_transpiler.utils import PythonVersion
+from mypy.nodes import Var
+
+from python_transpiler.visitor import MypyToAst
 
 nongen_builtins = get_nongen_builtins((3, 8))
 nongen_builtins_polyfill = {
@@ -32,21 +38,13 @@ nongen_builtins_polyfill = {
 }
 
 
-class PEP585(TransformVisitor):
+class Py38Visitor(TransformVisitor):
     """type hinting generics in standard collections"""
 
     in_alias = False
     in_class_bases = False
 
-    def __init__(self, manager: BuildManager):
-        self.manager = manager
-        self.manager.semantic_analyzer.options = manager.options
-        self.dependencies = set[str]()
-        self.imports = defaultdict[str, list[(str, str | None),]](list)
-        s = self.manager.semantic_analyzer
-        self.type_replacer = PEP585TypeReplacer(
-            s, s.tvar_scope, s.plugin, s.options, s.is_typeshed_stub_file
-        )
+    def __init__(self):
         super().__init__()
         self.test_only = True
 
@@ -54,12 +52,39 @@ class PEP585(TransformVisitor):
     def python_version() -> PythonVersion:
         return 3, 8
 
+    # @override # TODO actual base class lol!
+    def visit_module(self, node: ast.Module) -> ast.Module:
+        o = Options()
+        o.preserve_asts = True
+        o.incremental = False
+        # TODO: use a lower level mypy api to avoid real files
+        Path("temp.py").write_text(ast.unparse(node))
+        manager = mypy_build(
+            sources=[BuildSource("temp.py", "temp")], options=o
+        ).manager
+        self.manager = manager
+        self.manager.semantic_analyzer.options = manager.options
+        self.dependencies = set[str]()
+        self.imports = defaultdict[str, list[tuple[str, str | None]]](list)
+        s = self.manager.semantic_analyzer
+        self.type_replacer = PEP585TypeReplacer(
+            s, s.tvar_scope, s.plugin, s.options, s.is_typeshed_stub_file
+        )
+        result = self.visit_mypy_file(manager.tree["temp.py"])
+        return result.visit(MypyToAst(result))
+
     @override
     def visit_mypy_file(self, node: MypyFile) -> MypyFile:
         result = super().visit_mypy_file(node)
         for base, names in self.imports.items():
             result.defs.insert(0, ImportFrom(base, 0, names))
         return result
+
+    @override
+    def visit_var(self, node: Var) -> Var:
+        if node.fullname == "builtins.list":
+            return Var("List", idk_what_goes_here)
+        return super().visit_var(node)
 
     @override
     def visit_type_alias_expr(self, o: TypeAliasExpr) -> TypeAliasExpr:
@@ -138,6 +163,3 @@ class PEP585TypeReplacer(TypeAnalyser):
             if fullname in nongen_builtins and t.args:
                 t.name = nongen_builtins[fullname].split(".")[-1]
         return super().visit_unbound_type(t, defining_literal)
-
-
-Py38Visitors = [PEP585]
