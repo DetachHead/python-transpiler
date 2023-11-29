@@ -17,6 +17,9 @@ license = { text = "MIT" }
 [project.urls]
 repository = "https://github.com/detachhead/pytest-robotframework"
 
+[project.scripts]
+transpile = 'python_transpiler.cli:main'
+
 [tool.pyprojectx]
 pdm = "pdm==2.9.3"
 
