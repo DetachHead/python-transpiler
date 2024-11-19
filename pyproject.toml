@@ -7,6 +7,7 @@ authors = [
 ]
 dependencies = [
     "basedtyping<0.2,>=0.0.3",
+    "basedmypy@git+http://github.com/kotlinisland/basedmypy.git@v2.2.1",
     "typer[all]>=0.9.0,<0.10.0",
     "tomli-w>=1.0.0,<2.0.0",
 ]
@@ -15,7 +16,7 @@ readme = "README.md"
 license = { text = "MIT" }
 
 [project.urls]
-repository = "https://github.com/detachhead/pytest-robotframework"
+repository = "https://github.com/detachhead/python-transpiler"
 
 [project.scripts]
 transpile = 'python_transpiler.cli:main'
@@ -28,7 +29,6 @@ install = "pdm install"
 run = "pdm run"
 outdated = "pdm update --outdated"
 test = "pdm run pytest"
-
 
 [tool.pdm.dev-dependencies]
 lint = ["black>=23", "basedmypy>=2.1", "pylint>=3.0.0a7", "ruff>=0.0.290"]
@@ -276,7 +276,7 @@ addopts = ['--ignore=tests/fixtures']
 
 [tool.mypy]
 allow_redefinition = true
-default_return = false
+default_return = true
 
 [[tool.mypy.overrides]]
 module = ['python_transpiler.*', 'tests.*']

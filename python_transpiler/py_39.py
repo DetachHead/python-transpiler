@@ -11,18 +11,19 @@ if TYPE_CHECKING:
     from ast import ImportFrom
 
 
-class Py310Visitor(BaseVisitor):
+class Py39Visitor(BaseVisitor):
     @override
     @staticmethod
     def python_version() -> PythonVersion:
-        return (3, 10)
+        return (3, 9)
 
     @override
     def visit_ImportFrom(self, node: ImportFrom) -> list[ImportFrom]:
         result = replace_imports(
             {
-                Import("typing", "Never"): Import("typing_extensions", "Never"),
-                Import("tomllib"): Import("tomli", dependency="tomli"),
+                Import("typing", "Concatenate"): Import(
+                    "typing_extensions", "Concatenate"
+                )
             },
             node,
         )

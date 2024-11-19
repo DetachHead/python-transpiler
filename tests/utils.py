@@ -14,7 +14,12 @@ if TYPE_CHECKING:
 class TargetTester:
     target: PythonVersion
 
-    def expect(self, input_code: str, output: str):
+    def expect(
+        self, input_code: str, output: str, dependencies: set[str] | None = None
+    ):
+        if dependencies is None:
+            dependencies = set()
         module = parse(input_code)
-        transpile(module, self.target)
+        actual_dependencies = transpile(module, self.target)
         assert unparse(module) == output
+        assert actual_dependencies == dependencies

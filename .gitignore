@@ -1,6 +1,7 @@
 **/__pycache__
 /.venv/
 /dist/
+/transpiled/
 *.log
 .pyprojectx
 .pdm-python
